@@ -16,6 +16,10 @@ are included in Git. Keep research downloads under the ignored local directories
 `bash scripts/publish_github.sh` is an optional **local sync helper** for an
 already-cloned repository (it does not create, rename, or change visibility).
 
+## Agent handoff
+
+For the next implementation agent, start with **[Step 1 execution handoff](docs/AGENT_HANDOFF_STEP1.md)**. It specifies exact Phase A commands and evidence requirements, Phase B scope boundaries, PR/report format, and stop conditions. Do not begin model training until Step 1 is independently verified.
+
 ## Step 1 execution runbook
 
 Read **[Step 1 — Heterogeneous graph and frozen node inputs](docs/STEP1_GRAPH_INPUTS_RUNBOOK.md)** for the end-to-end preparation plan, source identities, commands, exact reference comparison gates, unresolved independent-preprocessing work, and no-data repository policy. The notebook remains at [`notebooks/TxGNN_Step1_Graph_and_Inputs.ipynb`](notebooks/TxGNN_Step1_Graph_and_Inputs.ipynb).
