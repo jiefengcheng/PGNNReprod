@@ -8,7 +8,7 @@
 Base and head SHA; branch; PR:
 Base: bf010b9962a219f193f338fcb68be0da83f8d543
 Branch: work/step1-no-dgl
-Head: recorded at commit time
+Implementation commit: e191ed9cd3882d2f0e8cc0abf6dccf85cdf4e354
 PR: opened from this branch
 
 Environment and exact executed commands:
