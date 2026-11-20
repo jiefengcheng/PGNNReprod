@@ -61,6 +61,13 @@ class GraphTests(unittest.TestCase):
         self.assertFalse(indication.flags.writeable)
         self.assertFalse(any(2 in edges for edges in graph.edges.values()))
 
+    def test_same_directed_fact_in_two_splits_rejected(self):
+        full, splits, manifest = fixture()
+        duplicate = table([("drug", "drug1", 1, "indication", "disease", "d1", 1)])
+        splits["valid"] = pd.concat([splits["valid"], duplicate], ignore_index=True)
+        with self.assertRaisesRegex(ValueError, "Leakage"):
+            build_graph(full, splits, manifest)
+
     def test_reverse_heldout_leak_rejected(self):
         full, splits, manifest = fixture()
         leak = table([("disease", "shared", 0, "rev_indication", "drug", "shared", 0)])
