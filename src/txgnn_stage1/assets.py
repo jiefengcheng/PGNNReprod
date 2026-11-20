@@ -19,6 +19,9 @@ ASSETS = {
     'edges.csv': (7144483, ',', {'x_index', 'y_index', 'relation'}),
 }
 
+# Harvard Dataverse returns HTTP 403 for the default Python-urllib user agent.
+USER_AGENT = 'PGNNReprod-stage1/0.1 (+https://github.com/jiefengcheng/PGNNReprod)'
+
 def file_sha256(path):
     h = hashlib.sha256()
     with Path(path).open('rb') as stream:
@@ -34,6 +37,14 @@ def checked_header(path, delimiter, required):
         raise ValueError('Invalid asset header: {} missing {}'.format(path, sorted(missing)))
     return header
 
+def open_asset(url, timeout=120):
+    request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
+    response = urllib.request.urlopen(request, timeout=timeout)
+    if response.status != 200:
+        response.close()
+        raise RuntimeError('Unexpected HTTP status {}'.format(response.status))
+    return response
+
 def acquire_assets(raw_dir):
     raw_dir = Path(raw_dir)
     raw_dir.mkdir(parents=True, exist_ok=True)
@@ -48,9 +59,7 @@ def acquire_assets(raw_dir):
             temporary = Path(temporary)
             try:
                 with os.fdopen(descriptor, 'wb') as stream:
-                    with urllib.request.urlopen(url, timeout=120) as response:
-                        if response.status != 200:
-                            raise RuntimeError('Unexpected HTTP status {}'.format(response.status))
+                    with open_asset(url) as response:
                         shutil.copyfileobj(response, stream, length=1024 * 1024)
                 checked_header(temporary, delimiter, required)
                 if filename in prior and file_sha256(temporary) != prior[filename]['sha256']:
