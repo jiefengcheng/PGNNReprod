@@ -1,6 +1,6 @@
 # Step 1 acceptance contract — independent implementation (NO DGL)
 
-**Status at handoff:** Source-only synthetic tests exist; real-data independent graph preparation and bundle replay are NOT_RUN/NOT_IMPLEMENTED. The earlier requirement to install TxGNN/DGL or reproduce a running upstream graph is **cancelled**. See [AGENT_HANDOFF_STEP1.md](AGENT_HANDOFF_STEP1.md).
+**Status:** The owned NumPy/Pandas `complex_disease` bundle has executed evidence in [STEP1_EXECUTION_REPORT.md](STEP1_EXECUTION_REPORT.md). Historical DGL/Torch parity remains out of scope. See [AGENT_HANDOFF_STEP1.md](AGENT_HANDOFF_STEP1.md).
 
 1. **Source identity:** fixed released Dataverse file IDs, successful schema reads, and local SHA-256 manifest; source files remain outside Git.
 2. **Typed registry:** external IDs, released global indices, model-local indices and original/grouped disease identities are kept distinct, reverse-resolvable, and free of unexplained normalization collisions.

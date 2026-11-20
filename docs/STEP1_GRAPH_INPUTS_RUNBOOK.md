@@ -3,7 +3,7 @@
 **Track:** Independent TxGNN reproduction · **Owner repository:** [jiefengcheng/PGNNReprod](https://github.com/jiefengcheng/PGNNReprod) · **Reference SHA:** `0e0203c3939f7d12da27aaf10e55daaff5424023`  
 **Scope:** Construct the **training** heterogeneous graph, typed identity registry and frozen input tensors. This is **not** model training or GraphMask implementation.
 
-> **Current execution status (2026-11-20):** The independent constructor and initialization utilities have source-only synthetic tests. The authors' real released dataset has not been downloaded or compared within this repo; upstream/reference data preparation and final end-to-end independent preprocessing remain **NOT_RUN / NOT_IMPLEMENTED**, respectively. No paper-level predictive reproduction is claimed.
+> **Current execution status (2026-11-20):** The owned `complex_disease_owned_v1` pipeline has been executed on the locked Dataverse files. See [STEP1_EXECUTION_REPORT.md](STEP1_EXECUTION_REPORT.md). That run does not claim historical DGL or Torch-bit parity.
 
 > **CURRENT EXECUTION OVERRIDE (2026-11-20):** **Do NOT install or run TxGNN, DGL or PyG for Step 1.** This lane is an **independent Python/NumPy/Pandas implementation**. The published source code is a static specification. All historical upstream-runtime parity and original Torch random-bit matching discussed in older drafts are optional future work, **not acceptance prerequisites**. The authoritative next-agent instructions are [here](AGENT_HANDOFF_STEP1.md).
 
