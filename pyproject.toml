@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "txgnn-stage1"
+version = "0.1.0"
+description = "Source-reviewed independent TxGNN graph and input reproduction research"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.23", "pandas>=1.5"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+inputs = ["torch>=2.0"]
+reference = ["torch", "dgl"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
