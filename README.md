@@ -1,8 +1,8 @@
 # Independent TxGNN Reproduction
 
-**Status:** Step 1 research implementation staged; **NOT** a validated full-KG reproduction. No biomedical datasets are stored here.
+**Status:** Step 1 source-only components exist; independent raw-to-bundle implementation is incomplete. **No TxGNN/DGL installation is required.** No biomedical datasets are stored here.
 
-This repository curates code and reproducible source-only artifacts for an independently developed, fully trainable TxGNN pipeline checked against a pinned public reference. The first lane is **construct the heterogeneous training graph and freeze its node inputs**.
+This repository curates code and reproducible source-only artifacts for an independently developed, fully trainable TxGNN pipeline grounded in the published paper and pinned source as a static specification. The first lane is **construct the heterogeneous training graph and freeze its node inputs**.
 
 ## GitHub repository
 
@@ -46,26 +46,22 @@ pip install -e '.[test]'
 python -m pytest -q tests/test_graph.py
 ```
 
-## Data acquisition and real-reference parity (opt-in)
+## Step 1: independent preparation (NO upstream runtime)
 
-All downloaded files and generated snapshots remain in ignored local directories. Only run these commands on a machine with the relevant dependencies installed.
+**Do not install or execute TxGNN, DGL or PyG for Step 1.** Start with [the corrected agent handoff](docs/AGENT_HANDOFF_STEP1.md) and [the runbook](docs/STEP1_GRAPH_INPUTS_RUNBOOK.md). Upstream source is a **read-only specification**. The previous legacy-reference execution plan has been withdrawn as a prerequisite.
 
 ```bash
-# Download the three exact archived KG files locally (NOT into Git).
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[test]'
+python -m pytest -q
+python scripts/check_no_data.py
+
+# Optional released asset download, into gitignored local directory:
 python scripts/stage1.py fetch --raw-dir data/raw
-
-# Keep upstream checkout in ignored reference/TxGNN, pinned at the exact commit:
-git clone https://github.com/mims-harvard/TxGNN.git reference/TxGNN
-git -C reference/TxGNN checkout 0e0203c3939f7d12da27aaf10e55daaff5424023
-
-# In a compatible isolated legacy TxGNN environment (not this minimal environment):
-python scripts/stage1.py reference --raw-dir data/raw --upstream-repo reference/TxGNN
-
-# Use the actual snapshot directory reported above:
-python scripts/stage1.py compare --snapshot artifacts/local/reference_XXXX/snapshot
 ```
 
-The reference invocation requires the pinned TxGNN installation imported from `reference/TxGNN` and compatible DGL/PyTorch/PyG dependencies. Its output is not a finished independently constructed raw-data split. **Independent raw normalization and disease-area split parity remain open work**, and no real-data accuracy or training results are claimed.
+**Next engineering work:** implement `raw KG → normalized typed IDs → base splits → reverse rows → NumPy training adjacency → frozen owned inputs → serialized reloadable bundle`. The existing `graph.py` only handles **already prepared** tables. `reference.py`, `compare.py`, and `scripts/stage1.py reference|compare` are **legacy optional tools** and must not be required or attempted by the Step 1 agent.
 
 ## Repository rules
 
