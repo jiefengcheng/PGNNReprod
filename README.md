@@ -16,6 +16,10 @@ are included in Git. Keep research downloads under the ignored local directories
 `bash scripts/publish_github.sh` is an optional **local sync helper** for an
 already-cloned repository (it does not create, rename, or change visibility).
 
+## Step 1 execution runbook
+
+Read **[Step 1 — Heterogeneous graph and frozen node inputs](docs/STEP1_GRAPH_INPUTS_RUNBOOK.md)** for the end-to-end preparation plan, source identities, commands, exact reference comparison gates, unresolved independent-preprocessing work, and no-data repository policy. The notebook remains at [`notebooks/TxGNN_Step1_Graph_and_Inputs.ipynb`](notebooks/TxGNN_Step1_Graph_and_Inputs.ipynb).
+
 ## What is included
 
 | Path | Purpose | Readiness |
