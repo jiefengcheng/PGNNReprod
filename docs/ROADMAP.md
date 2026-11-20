@@ -15,6 +15,7 @@ Own the full scientific preparation, training state, evaluation and model export
 - [x] Build the training-only NumPy adjacency using full node inventory; serialize ordered canonical triples and all mappings.
 - [x] Generate and persist **owned deterministic** FP32 Xavier initial features; no original Torch-bit parity required.
 - [x] Prove independent fresh-process bundle reload and rerun determinism; publish only sanitized checks/results, not data bytes.
+- [x] Add `autoimmune_owned_v1` as a separate protocol: DOID 417, two-hop mask, holdout, and evaluation filter. Evidence: `docs/STEP1_AUTOIMMUNE_REPORT.md`.
 
 **Not required:** installing/running upstream TxGNN, DGL, PyG, Torch, pretrained checkpoints, or training on a GPU. Legacy reference exporter/comparer in this repo is archival/optional only and is not a Step 1 gate.
 

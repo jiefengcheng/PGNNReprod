@@ -36,6 +36,12 @@ def main():
     prep.add_argument("--preprocess-seed", type=int, default=42)
     prep.add_argument("--input-seed", type=int, default=0)
     prep.add_argument("--input-dim", type=int, default=100)
+    prep.add_argument("--split", default="complex_disease")
+    prep.add_argument("--obo", type=Path, default=None)
+    prep.add_argument("--mondo-xref", type=Path, default=None)
+    prep.add_argument("--disease-list", type=Path, default=None)
+    prep.add_argument("--hops", type=int, default=2)
+    prep.add_argument("--test-size", type=float, default=0.05)
     verify = sub.add_parser("verify", help="Reload a bundle in-process and in a fresh process")
     verify.add_argument("--bundle", required=True, type=Path)
     args = p.parse_args()
@@ -45,7 +51,10 @@ def main():
     elif args.command == "prepare":
         path = prepare_bundle(args.raw_dir, args.out, group_map_path=args.group_map,
                               fold_seed=args.fold_seed, preprocess_seed=args.preprocess_seed,
-                              input_seed=args.input_seed, input_dim=args.input_dim)
+                              input_seed=args.input_seed, input_dim=args.input_dim, split=args.split,
+                              obo_path=args.obo, mondo_xref_path=args.mondo_xref,
+                              disease_list_path=args.disease_list, hops=args.hops,
+                              test_size=args.test_size)
         print("Owned bundle:", path)
     elif args.command == "verify":
         print(json.dumps(verify_bundle(args.bundle), indent=2))
