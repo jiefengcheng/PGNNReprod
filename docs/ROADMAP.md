@@ -19,9 +19,14 @@ Own the full scientific preparation, training state, evaluation and model export
 
 **Not required:** installing/running upstream TxGNN, DGL, PyG, Torch, pretrained checkpoints, or training on a GPU. Legacy reference exporter/comparer in this repo is archival/optional only and is not a Step 1 gate.
 
+## Stage 2 — encoder and scorer (CURRENT)
+
+- [x] NumPy RGCN layer: per-relation affine map, mean within a relation, sum across relations.
+- [x] Two-layer encoder with leaky ReLU only between the layers, and DistMult scores. Evidence: `tests/test_model.py`.
+- [ ] Training, negative sampling, and full-graph optimization are not started.
+
 ## Later lanes
 
-- Stage 2: independently implement RGCN encoder and DistMult scoring, with small numerical unit tests.
 - Stage 3: owned pretraining and fine-tuning.
 - Stage 4: protected evaluation, comparison and repeatability.
 - Stage 5: GraphMask explainer and scientific evidence auditing.
