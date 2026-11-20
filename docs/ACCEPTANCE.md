@@ -1,14 +1,15 @@
-# Step 1 acceptance contract
+# Step 1 acceptance contract — independent implementation (NO DGL)
 
-**Current status: synthetic graph construction only. Full-data parity is NOT_RUN.**
+**Status at handoff:** Source-only synthetic tests exist; real-data independent graph preparation and bundle replay are NOT_RUN/NOT_IMPLEMENTED. The earlier requirement to install TxGNN/DGL or reproduce a running upstream graph is **cancelled**. See [AGENT_HANDOFF_STEP1.md](AGENT_HANDOFF_STEP1.md).
 
-1. **Source identity:** each acquired file's Dataverse file ID, SHA-256, bytes, delimiter and schema are captured; raw files stay outside Git.
-2. **Node registry:** canonical typed identities, original/grouped disease memberships and local indices are stable; alias and collision audit is recorded.
-3. **Graph schema:** exact node-type and canonical relation order; full node inventory retained even for isolated test diseases.
-4. **Split integrity:** forward/reverse facts remain in the same split; held-out relationships are absent from train adjacency; all applied masks are serialized.
-5. **Graph parity:** per-relation ordered arrays equal the pinned reference, or deviations are recorded and named; multiset hash also compares edge multiplicity.
-6. **Input parity:** CPU FP32 Xavier tensors match the pinned reference for a frozen node order and seed, or are a declared owned seed/version; actual tensors persist.
-7. **Fresh-process replay:** independent process loads identical graph, mappings and inputs without invoking random data generation.
-8. **No-data repository:** CI checks source files only; raw CSV, matrices, tensors, and trained checkpoint artifacts never enter git history.
+1. **Source identity:** fixed released Dataverse file IDs, successful schema reads, and local SHA-256 manifest; source files remain outside Git.
+2. **Typed registry:** external IDs, released global indices, model-local indices and original/grouped disease identities are kept distinct, reverse-resolvable, and free of unexplained normalization collisions.
+3. **Preprocessing:** source-order-aware representative edge selection, stable typed index assignment and relation inventory are reproducible from locked raw inputs without importing upstream TxGNN.
+4. **Splits:** explicit owned seed, saved membership, forward/reverse pairing, and no forbidden held-out therapeutic edges in training.
+5. **Training graph:** full processed node inventory including isolated nodes; only training adjacency; canonical relation order; integer typed endpoints; multiplicity/ordered-array digests.
+6. **Frozen inputs:** deterministic owned FP32 Xavier matrices, saved actual array bytes and dtype/shape/RNG metadata; historical Torch random bit parity **not required**.
+7. **Independent replay:** fresh process restores the exact schema, mappings, split metadata, edges and inputs with no RNG and matching hashes.
+8. **Proof:** hand-computed tests plus real-data aggregate validations (if assets obtained), with exact command logs, executed/skipped/failed counts, and known deviations from the pinned static code specification.
+9. **No data committed:** the public repository contains only audited source, docs and synthetic tests. No source KG, derived fact tables, graph arrays, node matrices, or checkpoints.
 
-This is a preparation milestone, not a claim of trained TxGNN performance or published metrics.
+**Acceptance is evidence-driven:** synthetic tests alone are not full real-data acceptance; inability to obtain the data must be reported BLOCKED. Do not claim equality to the authors' historical DGL graph or model performance. Any upstream numerical-oracle study is an optional separate lane.
