@@ -5,9 +5,11 @@
 
 > **Current execution status (2026-11-20):** The independent constructor and initialization utilities have source-only synthetic tests. The authors' real released dataset has not been downloaded or compared within this repo; upstream/reference data preparation and final end-to-end independent preprocessing remain **NOT_RUN / NOT_IMPLEMENTED**, respectively. No paper-level predictive reproduction is claimed.
 
+> **CURRENT EXECUTION OVERRIDE (2026-11-20):** **Do NOT install or run TxGNN, DGL or PyG for Step 1.** This lane is an **independent Python/NumPy/Pandas implementation**. The published source code is a static specification. All historical upstream-runtime parity and original Torch random-bit matching discussed in older drafts are optional future work, **not acceptance prerequisites**. The authoritative next-agent instructions are [here](AGENT_HANDOFF_STEP1.md).
+
 ## Goal and evidence boundary
 
-**Acceptance statement:** Given the versioned released TxGNN assets and a declared split, an independent implementation must produce a complete typed node registry, source-to-model crosswalks, ordered canonical relations, split-aware training edges, and **actual persisted CPU FP32 node-input tensors**. A new process must restore them without drawing random values. Reference parity must be shown against the exact pinned upstream code, or differences must be documented as deliberate variants.
+**Acceptance statement:** Given the versioned released TxGNN assets and a declared split, an independent implementation must produce a complete typed node registry, source-to-model crosswalks, ordered canonical relations, split-aware training edges, and **actual persisted CPU FP32 node-input tensors**. A new process must restore them without drawing random values. Validate source-derived invariants and hand-computed fixtures; describe decisions where the static code leaves ambiguity. A running upstream oracle is not required.
 
 The 2023 TxGNN methods (§1, pp. 22–23) describe a graph with ten node types, 29 undirected edge types, 123,527 nodes and 8,063,026 edges, compiled from multiple biomedical resources. The authors harmonized DrugBank/MONDO identities, selected a largest connected component and applied **manually reviewed disease grouping** (22,205 original MONDO concepts into 17,080 disease groups). Therefore:
 
@@ -129,7 +131,7 @@ Retain actual biological *absence* relationships (phenotype absent, expression a
 
 Flag special reference behavior instead of silently "repairing" it: representative direction can depend on source row order; area preprocessing may de-duplicate using endpoints without relation; reverse augmentation can introduce homogeneous self-loop multiplicity. Quantify real-data effects before defining a corrected variant.
 
-**Gate C — base table fidelity:** base relation inventory, ordered rows, multiplicity and per-type index mapping match a captured pinned-reference preparation, or deviations are classified and named.
+**Gate C — base table fidelity:** deterministic base relation inventory, ordered rows, multiplicities and type-local mappings agree with hand-computed fixtures and source-derived rules; record any ambiguity.
 
 ## 5. Create the split-aware base membership and capture masks
 
@@ -161,7 +163,7 @@ For each already partitioned base fact:
 
 Assert no reverse-only copy of a held-out fact survives in the training adjacency.
 
-**Gate E — directed split parity:** training and validation/test reverse augmentation agrees with reference on canonical relation triples and ordered/multiset edge counts.
+**Gate E — directed split integrity:** no forbidden holdout fact or reverse copy enters training; edge types/counts and multiplicities are reproducible under the declared owned policy.
 
 ## 7. Construct the heterogeneous training graph
 
@@ -183,7 +185,7 @@ Keep:
 
 The independently tested implementation for this stage is `src/txgnn_stage1/graph.py`. It consumes **already prepared** indexed tables, not raw knowledge-base dumps.
 
-**Gate F — constructor parity:** the independent graph built from reference-prepared tables has identical node counts, relations, ordered edge arrays and multiplicity. Explicitly report what has *not* yet been reproduced upstream of those tables.
+**Gate F — constructor integrity:** independently prepared tables yield the expected typed counts, ordered relation arrays and multiplicity; report which raw transformations remain unverified. No live DGL reference is required.
 
 ## 8. Initialize and persist fixed node inputs
 
@@ -208,35 +210,27 @@ Save all actual tensors, their ordered node registries, dtype/shape, logical has
 
 Implemented helper: `src/txgnn_stage1/inputs.py`.
 
-**Gate G — input parity/replay:** compare exact CPU values and pre/post RNG states to the pinned-reference exporter; independently load persisted tensors in a new process without invoking RNG.
+**Gate G — owned input replay:** saved NumPy FP32 Xavier matrices reproduce exactly under the chosen owned RNG/version and load in a fresh process without invoking RNG. Historical Torch bit identity is not required.
 
-## 9. Run the two distinct comparisons
+## 9. Prove the **independent** source-to-bundle pipeline
 
-**Comparison A — implemented adapter parity (real data still NOT_RUN).** Export a pinned upstream snapshot, then feed **its prepared tables** into the independent graph constructor. Check node inventory, relation parameter order, edge arrays, tensor shapes, exact node inputs and hashes.
+**Mandatory comparison 1 — hand-computed synthetic fixtures.** Exercise raw ID normalization, orientation, distinct typed IDs, grouped disease memberships, base split isolation, reverse relations, self-loops, relation ordering, held-out/isolated node retention, frozen features and exact serialized reload.
 
-**Comparison B — NOT YET IMPLEMENTED: true independent source-to-bundle preparation.** Starting only from locked released source assets, independently produce normalization, grouping crosswalks, base fact representation, masks, split assignment and reverse rows. Compare every intermediate with the reference snapshot, including counts, identities and actual selected edges. Passing A does **not** prove B.
+**Mandatory comparison 2 — real released data invariants.** Starting from locally downloaded and SHA-locked release files, run the owned pipeline end to end without importing `txgnn`, `dgl`, or `torch_geometric`. Save local (gitignored) aggregate reports of counts by node/relation/split, missing mappings, collision counts, graph hashes and data leakage checks. Repeat from the identical inputs and compare output hashes.
 
-Reference comparison commands (run in a separate legacy-compatible TxGNN environment):
+**Optional future investigation — historical reference parity.** The repository retains `reference.py` and `compare.py` as archival tools. Do **not** attempt their DGL/TxGNN setup as part of this milestone. The older reference-snapshot method only compared a graph built from already prepared tables; it did not establish independent raw-data preparation.
+
+Example workflow (the raw-to-bundle command is **to be implemented by the agent**, not a currently working command):
 
 ```bash
-# From PGNNReprod; all downloaded / generated content stays ignored.
-git clone https://github.com/mims-harvard/TxGNN.git reference/TxGNN
-git -C reference/TxGNN checkout 0e0203c3939f7d12da27aaf10e55daaff5424023
-
-# Ensure this pinned checkout supplies imported txgnn and compatible Torch/DGL/PyG.
-python scripts/stage1.py reference \
-  --raw-dir data/raw \
-  --upstream-repo reference/TxGNN \
-  --split complex_disease \
-  --fold-seed 42 --preprocess-seed 42 \
-  --input-seed 0 --input-dim 100
-
-# Substitute the concrete output path printed by the preceding command:
-python scripts/stage1.py compare \
-  --snapshot artifacts/local/reference_XXXX/snapshot
+python -m pytest -q
+python scripts/check_no_data.py
+python scripts/stage1.py fetch --raw-dir data/raw
+# Implement and document your owned `prepare`/`verify` commands.
+# Rerun them from a clean local output directory and compare hashes.
 ```
 
-Reference code verifies the upstream Git SHA and imported module path and exports the prepared tables, graph schema, node inputs, edge arrays, RNG state and environment. Comparison code reassembles reference-prepared graph state and performs an array/schema check in a **fresh process**. This is **not yet** a full trained-model score replay.
+**Gate H — acceptance:** all real-data checks executed and passed or precisely marked blocked; deterministic output hashes and independent reload; no forbidden training leakage; no data files committed.
 
 ## 10. Durable outputs, acceptance and next handoff
 
@@ -261,7 +255,7 @@ This is a **target artifact contract**, not a claim that all of these files are 
 
 A future model-facing loader should expose `node_counts`, `node_types`, `canonical_etypes`, `edge_index`, `node_inputs`, `node_registry`, `relation_to_parameter_row`, `split_views`, and a content `fingerprint`.
 
-**Step 1 is ACCEPTED only if:** asset integrity, typed crosswalks, reference-compatible base/split/directed graph parity, reverse-edge leakage exclusions, tensor identity and new-process restore all pass; all deviations are recorded. A passing test suite on toy graphs alone is not sufficient.
+**Step 1 is ACCEPTED only if:** locked assets, typed crosswalks, independent source-to-split-to-directed graph invariants, holdout-leakage exclusions, owned frozen input persistence and fresh-process restore pass. A passing toy test suite alone is not enough. Historical DGL parity is NOT required.
 
 ### Actual repo commands and no-data gate
 
@@ -279,8 +273,8 @@ Note: `.gitignore` is a prevention layer, not a guarantee against `git add -f`; 
 ### References / follow-on
 
 - [2023 TxGNN methods](https://doi.org/10.1101/2023.03.19.23287458) — pp. 22–23 KG curation, p. 24 input initialization, pp. 33–35 splits and reverse edges.
-- [Pinned TxGNN code](https://github.com/mims-harvard/TxGNN/tree/0e0203c3939f7d12da27aaf10e55daaff5424023) — behavioral oracle.
+- [Pinned TxGNN code](https://github.com/mims-harvard/TxGNN/tree/0e0203c3939f7d12da27aaf10e55daaff5424023) — read-only specification, not runtime prerequisite.
 - [Harvard Dataverse source publication](https://doi.org/10.7910/DVN/IXA7BM) — source files, fetched separately.
 - [Repo development roadmap](ROADMAP.md) — planned later model/training/evaluation stages.
 
-**Next engineering task after Comparison A:** implement and test independent *raw-to-base-to-splits* parity (Comparison B), with an explicit holdout-leakage report and a complete bundle loader. Only then advance to the encoder/pretraining pipeline.
+**Next engineering task:** implement and verify the independent *raw-to-base-to-splits* pipeline, with an explicit holdout-leakage report and complete bundle loader. Do not start legacy TxGNN/DGL setup. Only advance to model work after this is accepted.
