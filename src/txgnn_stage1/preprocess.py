@@ -68,8 +68,10 @@ def representative_edges(frame):
     missing = [column for column in required if column not in frame.columns]
     if missing:
         raise ValueError("KG frame missing columns {}".format(missing))
+    had_source = "source_row" in frame.columns
     work = frame.reset_index(drop=True).copy()
-    work["source_row"] = np.arange(len(work), dtype=np.int64)
+    if not had_source:
+        work["source_row"] = np.arange(len(work), dtype=np.int64)
     chosen = []
     rules = []
     for relation in np.unique(work.relation.to_numpy()):

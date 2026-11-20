@@ -8,6 +8,8 @@ import pandas as pd
 from .assets import ASSETS, file_sha256
 from .graph import build_graph
 from .inputs import INPUT_RNG_ALGORITHM, make_numpy_inputs
+from .area import PROTOCOL as AREA_PROTOCOL
+from .area import prepare_autoimmune
 from .preprocess import (PROTOCOL, prepare_tables, read_group_map, read_released_tables,
                          attach_node_file)
 
@@ -27,7 +29,8 @@ def _hash_tree(root):
 
 
 def prepare_bundle(raw_dir, out_dir, group_map_path=None, fold_seed=42, preprocess_seed=42,
-                   input_seed=0, input_dim=100):
+                   input_seed=0, input_dim=100, split="complex_disease", obo_path=None,
+                   mondo_xref_path=None, disease_list_path=None, hops=2, test_size=0.05):
     raw_dir = Path(raw_dir)
     out_dir = Path(out_dir)
     if out_dir.exists() and any(out_dir.iterdir()):
@@ -41,7 +44,29 @@ def prepare_bundle(raw_dir, out_dir, group_map_path=None, fold_seed=42, preproce
     kg, node_file = read_released_tables(raw_dir)
     group_map = read_group_map(group_map_path)
     print("Preparing tables: {} KG rows".format(len(kg)), flush=True)
-    prepared = prepare_tables(kg, group_map=group_map, fold_seed=fold_seed)
+    if split == "complex_disease":
+        prepared = prepare_tables(kg, group_map=group_map, fold_seed=fold_seed)
+        protocol = PROTOCOL
+        preprocess_consumed = False
+    elif split == "autoimmune":
+        edges = pd.read_csv(raw_dir / "edges.csv", usecols=["x_index", "y_index", "relation"],
+                            low_memory=False)
+        mondo_xref = pd.read_csv(mondo_xref_path, low_memory=False)
+        disease_list = pd.read_csv(disease_list_path, low_memory=False)
+        prepared = prepare_autoimmune(
+            kg, edges, node_file, mondo_xref, group_map, obo_path,
+            disease_list.node_id.tolist(), fold_seed=fold_seed, preprocess_seed=preprocess_seed,
+            hops=hops, test_size=test_size)
+        protocol = AREA_PROTOCOL
+        preprocess_consumed = True
+        pd.DataFrame({"x_index": prepared["mask_pairs"][0],
+                      "y_index": prepared["mask_pairs"][1]}).to_csv(
+            out_dir / "area_mask_pairs.csv", index=False)
+        evaluation = prepared["evaluation"]
+        columns = [name for name in ("source_row", "relation", "split") if name in evaluation.columns]
+        evaluation[columns].to_csv(out_dir / "evaluation_targets.csv", index=False)
+    else:
+        raise ValueError("Unsupported split: " + split)
     print("Building graph and inputs", flush=True)
     nodes, node_audit = attach_node_file(prepared["nodes"], node_file)
     base = _text_frame(prepared["base"])
@@ -81,17 +106,18 @@ def prepare_bundle(raw_dir, out_dir, group_map_path=None, fold_seed=42, preproce
     checks["input"] = {"algorithm": INPUT_RNG_ALGORITHM, "seed": int(input_seed),
                        "dimension": int(input_dim), "dtype": "float32",
                        "note": "NumPy PCG64 uniform draws cast to float32. Not Torch bit patterns."}
-    checks["preprocess_seed_consumed"] = False
+    checks["preprocess_seed_consumed"] = preprocess_consumed
     checks["holdout"] = _holdout_report(prepared["splits"], prepared["schema"]["reverse_relations"])
     # Collision lists can contain identifiers. Keep only the count in the saved audit.
     checks["normalization_collision_groups"] = len(prepared["checks"]["normalization_collisions"])
     checks.pop("normalization_collisions", None)
     (out_dir / "checks.json").write_text(json.dumps(checks, indent=2) + "\n")
     group_hash = None if group_map_path is None else file_sha256(group_map_path)
-    manifest = {"schema_version": 1, "protocol": PROTOCOL,
-                "config": {"split": "complex_disease", "fold_seed": int(fold_seed),
+    manifest = {"schema_version": 1, "protocol": protocol,
+                "config": {"split": split, "fold_seed": int(fold_seed),
                            "preprocess_seed": int(preprocess_seed), "input_seed": int(input_seed),
-                           "input_dim": int(input_dim), "preprocess_seed_consumed": False},
+                           "input_dim": int(input_dim), "preprocess_seed_consumed": preprocess_consumed,
+                           "hops": int(hops), "test_size": float(test_size)},
                 "assets": {name: {"datafile_id": lock[name]["datafile_id"], "sha256": lock[name]["sha256"],
                                   "bytes": lock[name]["bytes"]} for name in lock},
                 "group_map_sha256": group_hash,
